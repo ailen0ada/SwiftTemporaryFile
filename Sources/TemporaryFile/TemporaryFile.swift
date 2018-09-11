@@ -52,7 +52,7 @@ extension TemporaryFile: Hashable {
 
   #if swift(>=4.2)
   public func hash(into hasher:inout Hasher) {
-    haser.combine(self._fileHandle)
+    hasher.combine(self._fileHandle)
   }
   #else
   public var hashValue: Int {
