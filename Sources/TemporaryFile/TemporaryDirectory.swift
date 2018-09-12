@@ -110,7 +110,7 @@ extension TemporaryDirectory: Hashable {
   
   #if swift(>=4.2)
   public func hash(into hasher:inout Hasher) {
-    haser.combine(self._url.path)
+    hasher.combine(self._url.path)
   }
   #else
   public var hashValue: Int {
