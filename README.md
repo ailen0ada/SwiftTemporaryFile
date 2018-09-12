@@ -21,6 +21,10 @@ print(String(data:tmpFile.availableData, encoding:.utf8)!) // Prints "Hello, Wor
 tmpFile.copy(to:URL(fileURLWithPath:"/my/directory/hello.txt"))
 ```
 
+You can explicitly close the temporary file by calling `tmpFile.close()`,
+though all of the temporary files are automatically closed at the end of program.
+
+
 # License
 
 MIT License.  
