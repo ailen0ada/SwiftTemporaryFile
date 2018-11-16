@@ -84,10 +84,11 @@ extension TemporaryFile: _TemporaryFile {
 
 extension TemporaryFile {
   /// Create a temporary file and execute the closure passing the temporary file as an argument.
+  @discardableResult
   public convenience init(_ body:(TemporaryFile) throws -> Void) rethrows {
     self.init()
+    defer { self.close() }
     try body(self)
-    self.close()
   }
 }
 
