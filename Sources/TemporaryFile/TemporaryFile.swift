@@ -120,7 +120,7 @@ extension TemporaryFile {
   
   public func truncateFile(atOffset offset: UInt64) {
     /// Workaround for [SR-6524](https://bugs.swift.org/browse/SR-6524)
-    #if swift(>=4.1.50) || !os(Linux)
+    #if !os(Linux) // || swift(>=5.0)
     self._fileHandle.truncateFile(atOffset:offset)
     #else
     lseek(self._fileHandle.fileDescriptor, off_t(offset), SEEK_SET)
