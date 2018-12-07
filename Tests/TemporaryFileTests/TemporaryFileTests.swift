@@ -78,12 +78,26 @@ final class TemporaryFileTests: XCTestCase {
     try! FileManager.default.removeItem(at:destination)
   }
   
+  func test_temporaryFile_truncate() {
+    let data = "Hello!".data(using:.utf8)!
+    let tmpFile = TemporaryFile(contents:data)
+    
+    tmpFile.write(data)
+    tmpFile.seek(toFileOffset:0)
+    XCTAssertEqual(tmpFile.availableData, data)
+    
+    tmpFile.truncateFile(atOffset:5)
+    tmpFile.seek(toFileOffset:0)
+    XCTAssertEqual(String(data:tmpFile.availableData, encoding:.utf8), "Hello")
+  }
+  
   static var allTests = [
     ("test_UUID", test_UUID),
     ("test_temporaryDirectory", test_temporaryDirectory),
     ("test_temporaryFile", test_temporaryFile),
     ("test_temporaryFile_closure", test_temporaryFile_closure),
     ("test_temporaryFile_copy", test_temporaryFile_copy),
+    ("test_temporaryFile_truncate", test_temporaryFile_truncate),
   ]
 }
 
