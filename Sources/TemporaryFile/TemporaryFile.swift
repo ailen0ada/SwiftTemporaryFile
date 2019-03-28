@@ -50,7 +50,7 @@ extension TemporaryFile: Hashable {
     return lhs._fileHandle == rhs._fileHandle
   }
 
-  #if swift(>=4.2)
+  #if compiler(>=4.2)
   public func hash(into hasher:inout Hasher) {
     hasher.combine(self._fileHandle)
   }

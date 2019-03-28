@@ -108,7 +108,7 @@ extension TemporaryDirectory: Hashable {
     return lhs._url.path == rhs._url.path
   }
   
-  #if swift(>=4.2)
+  #if compiler(>=4.2)
   public func hash(into hasher:inout Hasher) {
     hasher.combine(self._url.path)
   }
