@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Represents a temporary file.
 public final class TemporaryFile {
-  private var _fileHandle: FileHandle
+  internal var _fileHandle: FileHandle
   private var _url: URL
   public private(set) var isClosed: Bool
   

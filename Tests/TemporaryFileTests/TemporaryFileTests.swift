@@ -1,6 +1,6 @@
 /* *************************************************************************************************
  TemporaryFileTests.swift
-   © 2018 YOCKOW.
+   © 2018-2019 YOCKOW.
      Licensed under MIT License.
      See "LICENSE.txt" for more information.
  ************************************************************************************************ */
@@ -91,13 +91,15 @@ final class TemporaryFileTests: XCTestCase {
     XCTAssertEqual(String(data:tmpFile.availableData, encoding:.utf8), "Hello")
   }
   
-  static var allTests = [
-    ("test_UUID", test_UUID),
-    ("test_temporaryDirectory", test_temporaryDirectory),
-    ("test_temporaryFile", test_temporaryFile),
-    ("test_temporaryFile_closure", test_temporaryFile_closure),
-    ("test_temporaryFile_copy", test_temporaryFile_copy),
-    ("test_temporaryFile_truncate", test_temporaryFile_truncate),
-  ]
+  func test_temporaryFileHandle() {
+    let data = "Hello".data(using:.utf8)!
+    let tmpFile = TemporaryFile(contents:data)
+    let tmpFileHandle = tmpFile.fileHandle
+    XCTAssertEqual(tmpFileHandle.availableData, data)
+    
+    tmpFileHandle.write(", World!".data(using:.utf8)!)
+    tmpFileHandle.seek(toFileOffset: 0)
+    XCTAssertEqual(tmpFileHandle.availableData, "Hello, World!".data(using:.utf8)!)
+  }
 }
 
