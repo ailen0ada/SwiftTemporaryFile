@@ -3,5 +3,6 @@ import XCTest
 import TemporaryFileTests
 
 var tests = [XCTestCaseEntry]()
-tests += TemporaryFileTests.allTests()
+tests += TemporaryFileTests.__allTests()
+
 XCTMain(tests)
