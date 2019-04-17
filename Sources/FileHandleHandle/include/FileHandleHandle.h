@@ -1,5 +1,5 @@
 /***************************************************************************************************
- TemporaryFileHandle.m
+ FileHandleHandle.h
    © 2019 YOCKOW.
      Licensed under MIT License.
      See "LICENSE.txt" for more information.
@@ -7,16 +7,14 @@
 
 #ifdef __MACH__
 
-#include "TemporaryFileHandle.h"
+#import <Foundation/Foundation.h>
 
-@implementation __TemporaryFileHandle
+/// Pseudoclass to make `TemporaryFile` become a subclass of `FileHandle`.
+/// Don't use this class directly.
+@interface _FileHandleHandle : NSFileHandle
 
-- (instancetype) initWithTemporaryFile: (id) temporaryFile {
-  if (self = [super init]) {
-    self.__temporaryFile = temporaryFile;
-  }
-  return self;
-}
+@property (nonatomic) NSFileHandle *__fileHandle;
+- (instancetype) initWithFileHandle: (NSFileHandle *) fileHandle;
 
 @end
 

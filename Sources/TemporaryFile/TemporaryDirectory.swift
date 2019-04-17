@@ -6,6 +6,7 @@
  ************************************************************************************************ */
  
 import Foundation
+import yExtensions
 private let manager = FileManager.default
 
 /// # TemporaryDirectory
@@ -39,7 +40,7 @@ public final class TemporaryDirectory {
     precondition(parent.isExistingLocalDirectoryURL,
                  "\(parent.path) is not a directory or does not exist.")
     
-    let uuid = UUID()._uuidStringForFilename
+    let uuid = UUID().base32EncodedString()
     let tmpDirURL = parent.appendingPathComponent("\(prefix)\(uuid)\(suffix)", isDirectory:true)
     
     try! manager.createDirectory(at:tmpDirURL,
@@ -50,19 +51,21 @@ public final class TemporaryDirectory {
   }
   
   /// Create a temporary file in the temporary directory represented by the receiver.
-  internal func _newTemporaryFile(prefix:String , suffix:String, contents data:Data?)
-    -> TemporaryFile
+  internal func _newTemporaryFile(prefix:String,
+                                  suffix:String,
+                                  contents data:Data?) -> TemporaryFile
   {
     if self.isClosed { fatalError("The temporary directory is already closed.") }
-    let filename = prefix + UUID()._uuidStringForFilename + suffix
+    let filename = prefix + UUID().base32EncodedString() + suffix
     let url = self._url.appendingPathComponent(filename, isDirectory:false)
     guard manager.createFile(atPath:url.path, contents:data,
                              attributes:[.posixPermissions:NSNumber(value:Int16(0o600))])
-    else {
-      fatalError("Failed to create a temporary file at \(url.path)")
+      else {
+        fatalError("Failed to create a temporary file at \(url.path)")
     }
     
     let tmpFile = TemporaryFile(fileAt:url)!
+    tmpFile._temporaryDirectory = self
     self._temporaryFiles.insert(tmpFile)
     return tmpFile
   }
@@ -108,15 +111,9 @@ extension TemporaryDirectory: Hashable {
     return lhs._url.path == rhs._url.path
   }
   
-  #if compiler(>=4.2)
   public func hash(into hasher:inout Hasher) {
     hasher.combine(self._url.path)
   }
-  #else
-  public var hashValue: Int {
-    return self._url.path.hashValue
-  }
-  #endif
 }
 
 private func _clean() {
