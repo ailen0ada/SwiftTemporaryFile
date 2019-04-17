@@ -11,14 +11,6 @@ import XCTest
 import Foundation
 
 final class TemporaryFileTests: XCTestCase {
-  func test_UUID() {
-    let uuid0 = UUID(uuidString:"00000000-0000-0000-0000-000000000000")!
-    XCTAssertEqual(uuid0._uuidStringForFilename, "AAAAAAAAAAAAAAAAAAAAAAAAAA")
-    
-    let uuid = UUID(uuidString:"E38399E3-83BC-E382-B9EF-BC93EFBC9221")!
-    XCTAssertEqual(uuid._uuidStringForFilename, "4OBZTY4DXTRYFOPPXSJ67PESEE")
-  }
-  
   func test_temporaryDirectory() {
     let prefix = "jp.YOCKOW.TemporaryFile.test."
     let suffix = ".\(ProcessInfo.processInfo.processIdentifier)"
@@ -65,8 +57,10 @@ final class TemporaryFileTests: XCTestCase {
     let data = Data([0,1,2,3,4])
     let tmpFile = TemporaryFile(contents:data)
     
-    let destination = URL.temporaryDirectory.appendingPathComponent("jp.YOCKOW.TemporaryFile.test." + UUID()._uuidStringForFilename,
-                                                                    isDirectory:false)
+    let destination = URL.temporaryDirectory.appendingPathComponent(
+        "jp.YOCKOW.TemporaryFile.test." + UUID().base32EncodedString(),
+        isDirectory:false
+    )
     
     tmpFile.copy(to:destination)
     
@@ -89,17 +83,6 @@ final class TemporaryFileTests: XCTestCase {
     tmpFile.truncateFile(atOffset:5)
     tmpFile.seek(toFileOffset:0)
     XCTAssertEqual(String(data:tmpFile.availableData, encoding:.utf8), "Hello")
-  }
-  
-  func test_temporaryFileHandle() {
-    let data = "Hello".data(using:.utf8)!
-    let tmpFile = TemporaryFile(contents:data)
-    let tmpFileHandle = tmpFile.fileHandle
-    XCTAssertEqual(tmpFileHandle.availableData, data)
-    
-    tmpFileHandle.write(", World!".data(using:.utf8)!)
-    tmpFileHandle.seek(toFileOffset: 0)
-    XCTAssertEqual(tmpFileHandle.availableData, "Hello, World!".data(using:.utf8)!)
   }
 }
 

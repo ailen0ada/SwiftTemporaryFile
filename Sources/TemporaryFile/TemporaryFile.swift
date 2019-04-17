@@ -7,23 +7,60 @@
 
 import Foundation
 
+#if canImport(ObjectiveC)
+import FileHandleHandle
+public typealias FileHandle_ = _FileHandleHandle
+#else
+public typealias FileHandle_ = FileHandle
+#endif
+
+private func _unavailable(_ function:StaticString = #function) -> Never {
+  fatalError("\(function) is unavailable in TemporaryFile.")
+}
+
 /// # TemporaryFile
 ///
+/// Subclass of `FileHandle`.
 /// Represents a temporary file.
-public final class TemporaryFile {
-  internal var _fileHandle: FileHandle
-  private var _url: URL
-  public private(set) var isClosed: Bool
+public final class TemporaryFile: FileHandle_ {
+  private var _url: URL!
   
-  fileprivate weak var _temporaryDirectory: TemporaryDirectory!
+  #if canImport(ObjectiveC)
+  private var _fileHandle: FileHandle! { return super.__fileHandle }
+  #else
+  private var _fileHandle: FileHandle!
+  #endif
+  
+  public private(set) var isClosed: Bool = false
+  
+  internal weak var _temporaryDirectory: TemporaryDirectory!
   
   /// Use the file at `url` temporarily.
   internal init?(fileAt url:URL) {
     guard url.isExistingLocalFileURL else { return nil }
     guard let fh = try? FileHandle(forUpdating:url) else { return nil }
+    
+    #if canImport(ObjectiveC)
+    super.init(fileHandle: fh)
+    #else
+    super.init(fileDescriptor:fh.fileDescriptor, closeOnDealloc: false)
     self._fileHandle = fh
+    #endif
+    
     self._url = url
-    self.isClosed = false
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+  
+  public override func isEqual(_ object: Any?) -> Bool {
+    guard case let anotherTmpFile as TemporaryFile = object else { return false }
+    return self._fileHandle.isEqual(anotherTmpFile._fileHandle)
+  }
+  
+  public override var hash: Int {
+    return self._fileHandle.hash
   }
   
   /// Just close and remove
@@ -39,28 +76,59 @@ public final class TemporaryFile {
     return true
   }
   
-  /// Close the temporary file represented by the receiver.
-  @discardableResult public func close() -> Bool {
-    return self._temporaryDirectory._close(temporaryFile:self)
+  public override var availableData: Data {
+    return self._fileHandle.availableData
+  }
+  
+  public override func closeFile() {
+    _ = self._temporaryDirectory._close(temporaryFile:self)
+  }
+  
+  @available(*, unavailable, message: "You can't get the file descriptor of TemporaryFile.")
+  public override var fileDescriptor: Int32 { _unavailable() }
+  
+  public override var offsetInFile: UInt64 {
+    return self._fileHandle.offsetInFile
+  }
+  
+  public override var readabilityHandler: ((FileHandle) -> Void)? {
+    get { return self._fileHandle.readabilityHandler }
+    set { self._fileHandle.readabilityHandler = newValue }
+  }
+  
+  public override func readData(ofLength length: Int) -> Data {
+    return self._fileHandle.readData(ofLength:length)
+  }
+  
+  public override func readDataToEndOfFile() -> Data {
+    return self._fileHandle.readDataToEndOfFile()
+  }
+  
+  public override func seek(toFileOffset offset: UInt64) {
+    self._fileHandle.seek(toFileOffset:offset)
+  }
+  
+  public override func seekToEndOfFile() -> UInt64 {
+    return self._fileHandle.seekToEndOfFile()
+  }
+  
+  public override func synchronizeFile() {
+    self._fileHandle.synchronizeFile()
+  }
+  
+  public override func truncateFile(atOffset offset: UInt64) {
+    return self._fileHandle.truncateFile(atOffset:offset)
+  }
+  
+  public override var writeabilityHandler: ((FileHandle) -> Void)? {
+    get { return self._fileHandle.writeabilityHandler }
+    set { self._fileHandle.writeabilityHandler = newValue }
+  }
+  
+  public override func write(_ data: Data) {
+    self._fileHandle.write(data)
   }
 }
-
-extension TemporaryFile: Hashable {
-  public static func == (lhs: TemporaryFile, rhs: TemporaryFile) -> Bool {
-    return lhs._fileHandle == rhs._fileHandle
-  }
-
-  #if compiler(>=4.2)
-  public func hash(into hasher:inout Hasher) {
-    hasher.combine(self._fileHandle)
-  }
-  #else
-  public var hashValue: Int {
-    return self._fileHandle.hashValue
-  }
-  #endif
-}
-
 
 fileprivate protocol _TemporaryFile {}
 extension _TemporaryFile where Self: TemporaryFile {
@@ -68,7 +136,6 @@ extension _TemporaryFile where Self: TemporaryFile {
                    prefix:String, suffix: String, contents data:Data?)
   {
     self = temporaryDirectory._newTemporaryFile(prefix:prefix, suffix:suffix, contents:data) as! Self
-    self._temporaryDirectory = temporaryDirectory
   }
 }
 
@@ -87,49 +154,8 @@ extension TemporaryFile {
   @discardableResult
   public convenience init(_ body:(TemporaryFile) throws -> Void) rethrows {
     self.init()
-    defer { self.close() }
+    defer { self.closeFile() }
     try body(self)
-  }
-}
-
-// like FileHandle...
-extension TemporaryFile {
-  public var availableData: Data {
-    return self._fileHandle.availableData
-  }
-  
-  public var offsetInFile: UInt64 {
-    return self._fileHandle.offsetInFile
-  }
-  
-  public func readData(ofLength length: Int) -> Data {
-    return self._fileHandle.readData(ofLength:length)
-  }
-  
-  public func readDataToEndOfFile() -> Data {
-    return self._fileHandle.readDataToEndOfFile()
-  }
-  
-  public func seek(toFileOffset offset: UInt64) {
-    self._fileHandle.seek(toFileOffset:offset)
-  }
-  
-  public func seekToEndOfFile() -> UInt64 {
-    return self._fileHandle.seekToEndOfFile()
-  }
-  
-  public func truncateFile(atOffset offset: UInt64) {
-    /// Workaround for [SR-6524](https://bugs.swift.org/browse/SR-6524)
-    #if !os(Linux) // || swift(>=5.0)
-    self._fileHandle.truncateFile(atOffset:offset)
-    #else
-    lseek(self._fileHandle.fileDescriptor, off_t(offset), SEEK_SET)
-    ftruncate(self._fileHandle.fileDescriptor, off_t(offset))
-    #endif
-  }
-  
-  public func write(_ data: Data) {
-    self._fileHandle.write(data)
   }
 }
 
@@ -138,11 +164,6 @@ extension TemporaryFile {
   /// This method calls `FileManager.copyItem(at:to:) throws` internally.
   /// - returns: `true` if the file is copied successfully, otherwise `false`.
   @discardableResult public func copy(to destination:URL) -> Bool {
-    if let _ = try? FileManager.default.copyItem(at:self._url, to:destination) {
-      return true
-    } else {
-      return false
-    }
+    return (try? FileManager.default.copyItem(at:self._url, to:destination)) != nil
   }
 }
-

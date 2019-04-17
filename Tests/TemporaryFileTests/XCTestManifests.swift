@@ -11,8 +11,6 @@ extension TemporaryFileTests {
         ("test_temporaryFile_closure", test_temporaryFile_closure),
         ("test_temporaryFile_copy", test_temporaryFile_copy),
         ("test_temporaryFile_truncate", test_temporaryFile_truncate),
-        ("test_temporaryFileHandle", test_temporaryFileHandle),
-        ("test_UUID", test_UUID),
     ]
 }
 
