@@ -91,9 +91,21 @@ public final class TemporaryFile: FileHandle_ {
     return self._fileHandle.offsetInFile
   }
   
+  private var _readabilityHandler: ((FileHandle) -> Void)? = nil
   public override var readabilityHandler: ((FileHandle) -> Void)? {
-    get { return self._fileHandle.readabilityHandler }
-    set { self._fileHandle.readabilityHandler = newValue }
+    get {
+      return self._readabilityHandler
+    }
+    set {
+      if let handler = newValue {
+        self._fileHandle.readabilityHandler = {[unowned self] _ in
+          handler(self)
+        }
+      } else {
+        self._fileHandle.readabilityHandler = nil
+        self._readabilityHandler = nil
+      }
+    }
   }
   
   public override func readData(ofLength length: Int) -> Data {
@@ -120,9 +132,21 @@ public final class TemporaryFile: FileHandle_ {
     return self._fileHandle.truncateFile(atOffset:offset)
   }
   
+  private var _writeabilityHandler: ((FileHandle) -> Void)? = nil
   public override var writeabilityHandler: ((FileHandle) -> Void)? {
-    get { return self._fileHandle.writeabilityHandler }
-    set { self._fileHandle.writeabilityHandler = newValue }
+    get {
+      return self._writeabilityHandler
+    }
+    set {
+      if let handler = newValue {
+        self._fileHandle.writeabilityHandler = {[unowned self] _ in
+          handler(self)
+        }
+      } else {
+        self._fileHandle.writeabilityHandler = nil
+        self._writeabilityHandler = nil
+      }
+    }
   }
   
   public override func write(_ data: Data) {
