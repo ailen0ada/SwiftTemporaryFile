@@ -102,6 +102,7 @@ public final class TemporaryFile: FileHandle_ {
           handler(self)
         }
       } else {
+        self._fileHandle.readabilityHandler = nil
         self._readabilityHandler = nil
       }
     }
@@ -142,6 +143,7 @@ public final class TemporaryFile: FileHandle_ {
           handler(self)
         }
       } else {
+        self._fileHandle.writeabilityHandler = nil
         self._writeabilityHandler = nil
       }
     }
