@@ -1,5 +1,5 @@
 /***************************************************************************************************
- FileHandleHandle.m
+ FileHandle_.m
    © 2019 YOCKOW.
      Licensed under MIT License.
      See "LICENSE.txt" for more information.
@@ -7,14 +7,12 @@
 
 #ifdef __MACH__
 
-#import "FileHandleHandle.h"
+#import "FileHandle_.h"
 
-@implementation _FileHandleHandle
+@implementation FileHandle_
 
-- (instancetype) initWithFileHandle: (NSFileHandle *) fileHandle {
-  if (self = [super init]) {
-    self.__fileHandle = fileHandle;
-  }
+- (instancetype) init {
+  self = [super init];
   return self;
 }
 

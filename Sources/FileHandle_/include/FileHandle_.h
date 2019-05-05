@@ -1,5 +1,5 @@
 /***************************************************************************************************
- FileHandleHandle.h
+ FileHandle_.h
    © 2019 YOCKOW.
      Licensed under MIT License.
      See "LICENSE.txt" for more information.
@@ -11,11 +11,8 @@
 
 /// Pseudoclass to make `TemporaryFile` become a subclass of `FileHandle`.
 /// Don't use this class directly.
-@interface _FileHandleHandle : NSFileHandle
-
-@property (nonatomic) NSFileHandle *__fileHandle;
-- (instancetype) initWithFileHandle: (NSFileHandle *) fileHandle;
-
+@interface FileHandle_ : NSFileHandle
+- (instancetype) init;
 @end
 
 #endif
