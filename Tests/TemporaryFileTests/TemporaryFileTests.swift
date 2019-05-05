@@ -84,5 +84,21 @@ final class TemporaryFileTests: XCTestCase {
     tmpFile.seek(toFileOffset:0)
     XCTAssertEqual(String(data:tmpFile.availableData, encoding:.utf8), "Hello")
   }
+  
+  func test_fileHandleCompatibleData() {
+    let fhData = FileHandleCompatibleData()
+    XCTAssertTrue(fhData.isEmpty)
+    
+    fhData.write(Data([0x00, 0x01, 0x02, 0x03]))
+    XCTAssertEqual(fhData.count, 4)
+    
+    fhData.seek(toFileOffset: 2)
+    XCTAssertEqual(fhData.availableData, Data([0x02, 0x03]))
+    
+    fhData.seek(toFileOffset: 3)
+    fhData.write(Data([0x04, 0x05]))
+    fhData.seek(toFileOffset: 0)
+    XCTAssertEqual(fhData.availableData, Data([0x00, 0x01, 0x02, 0x04, 0x05]))
+  }
 }
 

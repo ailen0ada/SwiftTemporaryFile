@@ -7,12 +7,6 @@
 
 import Foundation
 
-#if canImport(ObjectiveC)
-import FileHandle_
-#else
-public typealias FileHandle_ = FileHandle
-#endif
-
 private func _unavailable(_ function:StaticString = #function) -> Never {
   fatalError("\(function) is unavailable in TemporaryFile.")
 }
