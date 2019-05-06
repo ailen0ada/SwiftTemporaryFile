@@ -207,7 +207,15 @@ extension FileHandleCompatibleData: BidirectionalCollection {
 
 extension FileHandleCompatibleData: RandomAccessCollection {}
 
-extension FileHandleCompatibleData: MutableCollection, RangeReplaceableCollection {}
+extension FileHandleCompatibleData: MutableCollection, RangeReplaceableCollection {
+  public func append<S>(contentsOf newElements: S) where S: Sequence, S.Element == Data.Element {
+    self._data.append(contentsOf:newElements)
+  }
+  
+  public func reserveCapacity(_ nn: Int) {
+    self._data.reserveCapacity(nn)
+  }
+}
 
 extension FileHandleCompatibleData: ContiguousBytes {
   public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
@@ -220,5 +228,11 @@ extension FileHandleCompatibleData: DataProtocol {
   
   public var regions: CollectionOfOne<FileHandleCompatibleData> {
     return CollectionOfOne(self)
+  }
+}
+
+extension FileHandleCompatibleData: MutableDataProtocol {
+  public func resetBytes<R: RangeExpression>(in range: R) where R.Bound == Index {
+    self._data.resetBytes(in: range)
   }
 }

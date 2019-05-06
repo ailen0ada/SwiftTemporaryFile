@@ -114,5 +114,27 @@ final class TemporaryFileTests: XCTestCase {
     let fhData = FileHandleCompatibleData([0x00, 0x01])
     XCTAssertEqual(fhData[1], 0x01)
   }
+  
+  func test_fileHandleCompatibleData_mutableCollection() {
+    var fhData = FileHandleCompatibleData([0xFF, 0x00])
+    fhData.sort()
+    XCTAssertEqual(fhData[0], 0x00)
+    XCTAssertEqual(fhData[1], 0xFF)
+  }
+  
+  func test_fileHandleCompatibleData_rangeReplaceableCollection() {
+    let fhData1 = FileHandleCompatibleData()
+    XCTAssertEqual(fhData1.count, 0)
+    
+    let fhData2 = FileHandleCompatibleData(repeating:0xFF, count:100)
+    XCTAssertEqual(fhData2.count, 100)
+    XCTAssertEqual(fhData2.randomElement(), 0xFF)
+  }
+  
+  func test_fileHandleCompatibleData_mutableDataProtocol() {
+    let fhData = FileHandleCompatibleData([0xFF, 0xFF, 0xFF, 0xFF])
+    fhData.resetBytes(in: 1...2)
+    XCTAssertEqual(fhData.availableData, Data([0xFF, 0x00, 0x00, 0xFF]))
+  }
 }
 

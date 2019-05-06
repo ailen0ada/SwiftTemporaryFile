@@ -8,6 +8,9 @@ extension TemporaryFileTests {
     static let __allTests__TemporaryFileTests = [
         ("test_fileHandleCompatibleData", test_fileHandleCompatibleData),
         ("test_fileHandleCompatibleData_collection", test_fileHandleCompatibleData_collection),
+        ("test_fileHandleCompatibleData_mutableCollection", test_fileHandleCompatibleData_mutableCollection),
+        ("test_fileHandleCompatibleData_mutableDataProtocol", test_fileHandleCompatibleData_mutableDataProtocol),
+        ("test_fileHandleCompatibleData_rangeReplaceableCollection", test_fileHandleCompatibleData_rangeReplaceableCollection),
         ("test_fileHandleCompatibleData_sequence", test_fileHandleCompatibleData_sequence),
         ("test_temporaryDirectory", test_temporaryDirectory),
         ("test_temporaryFile", test_temporaryFile),
