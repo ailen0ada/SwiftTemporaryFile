@@ -212,3 +212,11 @@ extension FileHandleCompatibleData: ContiguousBytes {
     return try self._data.withUnsafeBytes(body)
   }
 }
+
+extension FileHandleCompatibleData: DataProtocol {
+  public typealias Regions = CollectionOfOne<FileHandleCompatibleData>
+  
+  public var regions: CollectionOfOne<FileHandleCompatibleData> {
+    return CollectionOfOne(self)
+  }
+}
