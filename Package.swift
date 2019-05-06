@@ -16,8 +16,8 @@ let package = Package(
   targets: [
     // Targets are the basic building blocks of a package. A target can define a module or a test suite.
     // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-    .target(name: "TemporaryFile", dependencies: ["FileHandleHandle", "SwiftYOCKOWExtensions"]),
-    .target(name: "FileHandleHandle", dependencies: []),
+    .target(name: "TemporaryFile", dependencies: ["FileHandle__", "SwiftYOCKOWExtensions"]),
+    .target(name: "FileHandle__", dependencies: []),
     .testTarget(name: "TemporaryFileTests", dependencies: ["TemporaryFile"]),
   ],
   swiftLanguageVersions:[.v4, .v4_2, .v5]

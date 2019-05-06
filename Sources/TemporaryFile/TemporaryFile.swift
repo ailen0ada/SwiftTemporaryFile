@@ -7,13 +7,6 @@
 
 import Foundation
 
-#if canImport(ObjectiveC)
-import FileHandleHandle
-public typealias FileHandle_ = _FileHandleHandle
-#else
-public typealias FileHandle_ = FileHandle
-#endif
-
 private func _unavailable(_ function:StaticString = #function) -> Never {
   fatalError("\(function) is unavailable in TemporaryFile.")
 }
@@ -24,12 +17,7 @@ private func _unavailable(_ function:StaticString = #function) -> Never {
 /// Represents a temporary file.
 public final class TemporaryFile: FileHandle_ {
   private var _url: URL!
-  
-  #if canImport(ObjectiveC)
-  private var _fileHandle: FileHandle! { return super.__fileHandle }
-  #else
   private var _fileHandle: FileHandle!
-  #endif
   
   public private(set) var isClosed: Bool = false
   
@@ -41,13 +29,13 @@ public final class TemporaryFile: FileHandle_ {
     guard let fh = try? FileHandle(forUpdating:url) else { return nil }
     
     #if canImport(ObjectiveC)
-    super.init(fileHandle: fh)
+    super.init()
     #else
     super.init(fileDescriptor:fh.fileDescriptor, closeOnDealloc: false)
-    self._fileHandle = fh
     #endif
     
     self._url = url
+    self._fileHandle = fh
   }
   
   required init?(coder: NSCoder) {
