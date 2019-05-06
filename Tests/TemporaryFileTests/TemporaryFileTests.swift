@@ -100,5 +100,14 @@ final class TemporaryFileTests: XCTestCase {
     fhData.seek(toFileOffset: 0)
     XCTAssertEqual(fhData.availableData, Data([0x00, 0x01, 0x02, 0x04, 0x05]))
   }
+  
+  func test_fileHandleCompatibleData_sequence() {
+    let fhData = FileHandleCompatibleData([0x00, 0x01])
+    XCTAssertEqual(fhData.next(), 0x00)
+    XCTAssertEqual(fhData.offsetInFile, 1)
+    XCTAssertEqual(fhData.next(), 0x01)
+    XCTAssertEqual(fhData.offsetInFile, 2)
+    XCTAssertEqual(fhData.next(), nil)
+  }
 }
 

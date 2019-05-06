@@ -161,3 +161,13 @@ extension FileHandleCompatibleData {
   }
 }
 
+extension FileHandleCompatibleData: Sequence, IteratorProtocol {
+  public typealias Element = Data.Element
+  public typealias Iterator = FileHandleCompatibleData
+  
+  public func next() -> Data.Element? {
+    guard self._offset < self._data.count else { return nil }
+    defer { self._offset += 1 }
+    return self._data[Data.RelativeIndex(self._offset)]
+  }
+}
