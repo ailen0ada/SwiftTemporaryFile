@@ -205,3 +205,4 @@ extension FileHandleCompatibleData: BidirectionalCollection {
   }
 }
 
+extension FileHandleCompatibleData: RandomAccessCollection {}
