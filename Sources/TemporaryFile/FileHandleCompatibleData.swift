@@ -28,9 +28,15 @@ open class FileHandleCompatibleData: FileHandle_ {
     self._data = data
   }
   
+  #if canImport(ObjectiveC)
   public convenience override init() {
     self.init(data: Data())
   }
+  #else
+  public convenience init() {
+    self.init(data: Data())
+  }
+  #endif
   
   required public init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
