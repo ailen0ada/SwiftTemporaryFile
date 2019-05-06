@@ -171,3 +171,24 @@ extension FileHandleCompatibleData: Sequence, IteratorProtocol {
     return self._data[Data.RelativeIndex(self._offset)]
   }
 }
+
+extension FileHandleCompatibleData: Collection {
+  public typealias Index = Int
+  
+  public subscript(position: Int) -> Data.Element {
+    get {
+      return self._data[Data.RelativeIndex(position)]
+    }
+    set {
+      self._data[Data.RelativeIndex(position)] = newValue
+    }
+  }
+  
+  public var startIndex: Int { return 0 }
+  
+  public var endIndex: Int { return self._data.count }
+  
+  public func index(after ii: Int) -> Int {
+    return ii + 1
+  }
+}

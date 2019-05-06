@@ -109,5 +109,10 @@ final class TemporaryFileTests: XCTestCase {
     XCTAssertEqual(fhData.offsetInFile, 2)
     XCTAssertEqual(fhData.next(), nil)
   }
+  
+  func test_fileHandleCompatibleData_collection() {
+    let fhData = FileHandleCompatibleData([0x00, 0x01])
+    XCTAssertEqual(fhData[1], 0x01)
+  }
 }
 
