@@ -206,3 +206,9 @@ extension FileHandleCompatibleData: BidirectionalCollection {
 }
 
 extension FileHandleCompatibleData: RandomAccessCollection {}
+
+extension FileHandleCompatibleData: ContiguousBytes {
+  public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
+    return try self._data.withUnsafeBytes(body)
+  }
+}
