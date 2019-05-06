@@ -29,14 +29,18 @@ open class FileHandleCompatibleData: FileHandle_ {
   }
   
   #if canImport(ObjectiveC)
-  public convenience override init() {
+  public convenience override required init() {
     self.init(data: Data())
   }
   #else
-  public convenience init() {
+  public convenience required init() {
     self.init(data: Data())
   }
   #endif
+  
+  public convenience required init<S>(_ elements: S) where S: Sequence, S.Element == UInt8 {
+    self.init(data: Data(elements))
+  }
   
   required public init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
@@ -149,10 +153,6 @@ extension FileHandleCompatibleData {
     self.init(data: Data(count: count))
   }
   
-  public convenience init<S>(_ elements: S) where S: Sequence, S.Element == UInt8 {
-    self.init(data: Data(elements))
-  }
-  
   open var isEmpty: Bool {
     return self._data.isEmpty
   }
@@ -206,6 +206,8 @@ extension FileHandleCompatibleData: BidirectionalCollection {
 }
 
 extension FileHandleCompatibleData: RandomAccessCollection {}
+
+extension FileHandleCompatibleData: MutableCollection, RangeReplaceableCollection {}
 
 extension FileHandleCompatibleData: ContiguousBytes {
   public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
