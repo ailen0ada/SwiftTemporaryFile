@@ -5,6 +5,7 @@
      See "LICENSE.txt" for more information.
  ************************************************************************************************ */
  
+import Foundation
 
 #if canImport(ObjectiveC)
 import FileHandle__
