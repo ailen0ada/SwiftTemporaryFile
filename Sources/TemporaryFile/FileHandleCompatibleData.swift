@@ -198,3 +198,10 @@ extension FileHandleCompatibleData: Collection {
     return ii + 1
   }
 }
+
+extension FileHandleCompatibleData: BidirectionalCollection {
+  public func index(before ii: Int) -> Int {
+    return ii - 1
+  }
+}
+
