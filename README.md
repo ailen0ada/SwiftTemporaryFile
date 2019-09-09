@@ -8,6 +8,12 @@ It was originally written as a part of [SwiftCGIResponder](https://github.com/YO
 - Swift 4.1, 4.2, 5
 - macOS or Linux
 
+
+## Dependencies
+
+* [SwiftUnicodeSupplement](https://github.com/YOCKOW/SwiftUnicodeSupplement)
+* [ySwiftExtensions](https://github.com/YOCKOW/ySwiftExtensions)
+
 # Usage
 
 ```Swift
