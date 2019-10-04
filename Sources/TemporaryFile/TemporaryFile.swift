@@ -73,7 +73,14 @@ public final class TemporaryFile: FileHandle_ {
   }
   
   @available(*, unavailable, message: "You can't get the file descriptor of TemporaryFile.")
-  public override var fileDescriptor: Int32 { _unavailable() }
+  public override var fileDescriptor: Int32 {
+    #if os(Linux) && compiler(>=5.1)
+    // `fileDescriptor` is called by `var _isPlatformHandleValid: Bool { get }`
+    return self._fileHandle.fileDescriptor
+    #else
+    _unavailable()
+    #endif
+  }
   
   public override var offsetInFile: UInt64 {
     return self._fileHandle.offsetInFile
