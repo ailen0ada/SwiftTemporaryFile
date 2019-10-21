@@ -65,12 +65,7 @@ open class FileHandleCompatibleData: FileHandle_ {
   
   @available(*, unavailable, message: "You can't get the file descriptor of FileHandleCompatibleData.")
   open override var fileDescriptor: Int32 {
-    #if os(Linux) && compiler(>=5.1)
-    // `fileDescriptor` is called by `var _isPlatformHandleValid: Bool { get }`
     return -1
-    #else
-    _unavailable()
-    #endif
   }
   
   override open var offsetInFile: UInt64 {
