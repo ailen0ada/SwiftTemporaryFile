@@ -1,5 +1,5 @@
 /* *************************************************************************************************
- FileHandleCompatibleData.swift
+ InMemoryFile.swift
    © 2019 YOCKOW.
      Licensed under MIT License.
      See "LICENSE.txt" for more information.
@@ -8,38 +8,41 @@
 import Foundation
 import yExtensions
 
+@available(*, deprecated, renamed: "InMemoryFile")
+public typealias FileHandleCompatibleData = InMemoryFile
+
 private func _unavailable(_ function:StaticString = #function) -> Never {
-  fatalError("\(function) is unavailable in FileHandleCompatibleData.")
+  fatalError("\(function) is unavailable in InMemoryFile.")
 }
 
 /// A byte buffer in memory that is (limitedly) compatible with `FileHandle`.
 /// You can use this class instead of `TemporaryFile` for a specific purpose.
-open class FileHandleCompatibleData: FileHandle_ {
-  private var _data: Data!
+open class InMemoryFile: FileHandle_ {
+  private var _data: Data
   private var _offset: Int = 0
   private var _isClosed: Bool = false
   
-  private init(data: Data) {
+  private init(_data data: Data) {
+    self._data = data
     #if canImport(ObjectiveC)
     super.init()
     #else
     super.init(fileDescriptor:-1, closeOnDealloc: false)
     #endif
-    self._data = data
   }
   
   #if canImport(ObjectiveC)
-  public convenience override required init() {
-    self.init(data: Data())
+  public convenience required override init() {
+    self.init(_data: Data())
   }
   #else
   public convenience required init() {
-    self.init(data: Data())
+    self.init(_data: Data())
   }
   #endif
   
   public convenience required init<S>(_ elements: S) where S: Sequence, S.Element == UInt8 {
-    self.init(data: Data(elements))
+    self.init(_data: Data(elements))
   }
   
   required public init?(coder: NSCoder) {
@@ -47,7 +50,7 @@ open class FileHandleCompatibleData: FileHandle_ {
   }
   
   open override func isEqual(_ object: Any?) -> Bool {
-    guard case let anotherData as FileHandleCompatibleData = object else { return false }
+    guard case let anotherData as InMemoryFile = object else { return false }
     return self._data == anotherData._data
   }
   
@@ -59,8 +62,13 @@ open class FileHandleCompatibleData: FileHandle_ {
     return self.readData(ofLength: self._data.count - self._offset)
   }
   
-  open override func closeFile() {
+  open override func close() throws {
     self._isClosed = true
+  }
+  
+  @available(*, deprecated, renamed: "close", message: "Use `func close() throws` instead.")
+  open override func closeFile() {
+    try! self.close()
   }
   
   @available(*, unavailable, message: "You can't get the file descriptor of FileHandleCompatibleData.")
@@ -87,7 +95,7 @@ open class FileHandleCompatibleData: FileHandle_ {
   }
   
   open override func readData(ofLength length: Int) -> Data {
-    if self._isClosed { return .init([]) }
+    if self._isClosed { return .init() }
     
     var end = self._offset + length
     if end > self._data.count { end = self._data.count }
@@ -100,18 +108,28 @@ open class FileHandleCompatibleData: FileHandle_ {
     return self.availableData
   }
   
+  @available(*, deprecated, renamed: "seek(toOffset:)", message: "Use `func seek(toOffset offset: UInt64) throws` instead.")
   open override func seek(toFileOffset offset: UInt64) {
+    try! self.seek(toOffset: offset)
+  }
+  
+  public override func seek(toOffset offset: UInt64) throws {
+    guard offset >= 0 && offset <= self._data.count else { throw TemporaryFileError.outOfRange }
     self.offsetInFile = offset
   }
   
   open override func seekToEndOfFile() -> UInt64 {
     let endOffset = UInt64(self._data.count)
-    self.seek(toFileOffset: endOffset)
+    try! self.seek(toOffset: endOffset)
     return endOffset
   }
   
-  open override func synchronizeFile() {
+  open override func synchronize() throws {
     _unavailable()
+  }
+  
+  open override func synchronizeFile() {
+    try! self.synchronize()
   }
   
   open override func truncateFile(atOffset offset: UInt64) {
@@ -144,15 +162,15 @@ open class FileHandleCompatibleData: FileHandle_ {
   }
 }
 
-extension FileHandleCompatibleData {
+extension InMemoryFile {
   /// Creates an empty buffer of a specified size.
   public convenience init(capacity: Int) {
-    self.init(data: Data(capacity: capacity))
+    self.init(_data: Data(capacity: capacity))
   }
   
   /// Creates a new buffer with the specified count of zeroed bytes.
   public convenience init(count: Int) {
-    self.init(data: Data(count: count))
+    self.init(_data: Data(count: count))
   }
   
   open var isEmpty: Bool {
@@ -169,9 +187,9 @@ extension FileHandleCompatibleData {
   }
 }
 
-extension FileHandleCompatibleData: Sequence, IteratorProtocol {
+extension InMemoryFile: Sequence, IteratorProtocol {
   public typealias Element = Data.Element
-  public typealias Iterator = FileHandleCompatibleData
+  public typealias Iterator = InMemoryFile
   
   public func next() -> Data.Element? {
     guard self._offset < self._data.count else { return nil }
@@ -180,7 +198,7 @@ extension FileHandleCompatibleData: Sequence, IteratorProtocol {
   }
 }
 
-extension FileHandleCompatibleData: Collection {
+extension InMemoryFile: Collection {
   public typealias Index = Int
   
   public subscript(position: Int) -> Data.Element {
@@ -201,15 +219,15 @@ extension FileHandleCompatibleData: Collection {
   }
 }
 
-extension FileHandleCompatibleData: BidirectionalCollection {
+extension InMemoryFile: BidirectionalCollection {
   public func index(before ii: Int) -> Int {
     return ii - 1
   }
 }
 
-extension FileHandleCompatibleData: RandomAccessCollection {}
+extension InMemoryFile: RandomAccessCollection {}
 
-extension FileHandleCompatibleData: MutableCollection, RangeReplaceableCollection {
+extension InMemoryFile: MutableCollection, RangeReplaceableCollection {
   public func append<S>(contentsOf newElements: S) where S: Sequence, S.Element == Data.Element {
     self._data.append(contentsOf:newElements)
   }
@@ -219,21 +237,21 @@ extension FileHandleCompatibleData: MutableCollection, RangeReplaceableCollectio
   }
 }
 
-extension FileHandleCompatibleData: ContiguousBytes {
+extension InMemoryFile: ContiguousBytes {
   public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
     return try self._data.withUnsafeBytes(body)
   }
 }
 
-extension FileHandleCompatibleData: DataProtocol {
-  public typealias Regions = CollectionOfOne<FileHandleCompatibleData>
+extension InMemoryFile: DataProtocol {
+  public typealias Regions = CollectionOfOne<InMemoryFile>
   
-  public var regions: CollectionOfOne<FileHandleCompatibleData> {
+  public var regions: CollectionOfOne<InMemoryFile> {
     return CollectionOfOne(self)
   }
 }
 
-extension FileHandleCompatibleData: MutableDataProtocol {
+extension InMemoryFile: MutableDataProtocol {
   public func resetBytes<R: RangeExpression>(in range: R) where R.Bound == Index {
     self._data.resetBytes(in: range)
   }

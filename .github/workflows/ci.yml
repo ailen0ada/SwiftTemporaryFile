@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: YOCKOW/Action-setup-swift@master
       with:
-        swift-version: '5.1'
+        swift-version: '5.1.2'
     - uses: actions/checkout@v1
     - name: Test with debug mode.
       run: swift test --configuration debug -Xswiftc -swift-version -Xswiftc ${{ matrix.swift_compat_ver }}
