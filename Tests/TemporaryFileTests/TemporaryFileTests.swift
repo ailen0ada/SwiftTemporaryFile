@@ -7,15 +7,17 @@
 
 import XCTest
 @testable import TemporaryFile
+import yExtensions
+import yProtocols
 
 import Foundation
 
 final class TemporaryFileTests: XCTestCase {
   func test_temporaryDirectory() throws {
     let tmpDir = try TemporaryDirectory(prefix: "jp.YOCKOW.TemporaryFile.test.")
-    XCTAssertTrue(tmpDir._url.isExistingLocalDirectoryURL)
+    XCTAssertTrue(tmpDir._url.isExistingLocalDirectory)
     try tmpDir.close()
-    XCTAssertFalse(tmpDir._url.isExistingLocalDirectoryURL)
+    XCTAssertFalse(tmpDir._url.isExistingLocalDirectory)
   }
   
   func test_temporaryFile() throws {
@@ -36,14 +38,14 @@ final class TemporaryFileTests: XCTestCase {
       let dataLength = UInt64(data.count)
       
       try tmpFile.seek(toOffset:0)
-      tmpFile.write(data)
-      XCTAssertEqual(tmpFile.offsetInFile, dataLength)
+      try tmpFile.write(contentsOf: data)
+      XCTAssertEqual(try tmpFile.offset(), dataLength)
       
       try tmpFile.seek(toOffset:0)
       XCTAssertEqual(tmpFile.availableData, data)
       
       try tmpFile.truncate(atOffset:0)
-      XCTAssertEqual(tmpFile.offsetInFile, 0)
+      XCTAssertEqual(try tmpFile.offset(), 0)
       try tmpFile.seek(toOffset:0)
       XCTAssertEqual(tmpFile.availableData.count, 0)
     }
@@ -61,14 +63,8 @@ final class TemporaryFileTests: XCTestCase {
     
     try tmpFile.copy(to: destination)
     
-    let copied = try FileHandle(forReadingFrom: destination)
-    defer {
-      if #available(OSX 10.15, *) {
-        try? copied.close()
-      } else {
-        copied.closeFile()
-      }
-    }
+    let copied = AnyFileHandle(try FileHandle(forReadingFrom: destination))
+    defer { try? copied.close() }
     
     XCTAssertEqual(copied.availableData, data)
     
@@ -79,7 +75,7 @@ final class TemporaryFileTests: XCTestCase {
     let data = "Hello!".data(using:.utf8)!
     let tmpFile = try TemporaryFile(contents: data)
     
-    tmpFile.write(data)
+    try tmpFile.write(contentsOf: data)
     try tmpFile.seek(toOffset: 0)
     XCTAssertEqual(tmpFile.availableData, data)
     
@@ -92,24 +88,24 @@ final class TemporaryFileTests: XCTestCase {
     let fhData = InMemoryFile()
     XCTAssertTrue(fhData.isEmpty)
     
-    fhData.write(Data([0x00, 0x01, 0x02, 0x03]))
+    try fhData.write(contentsOf: Data([0x00, 0x01, 0x02, 0x03]))
     XCTAssertEqual(fhData.count, 4)
     
     try fhData.seek(toOffset: 2)
     XCTAssertEqual(fhData.availableData, Data([0x02, 0x03]))
     
     try fhData.seek(toOffset: 3)
-    fhData.write(Data([0x04, 0x05]))
+    try fhData.write(contentsOf: Data([0x04, 0x05]))
     try fhData.seek(toOffset: 0)
     XCTAssertEqual(fhData.availableData, Data([0x00, 0x01, 0x02, 0x04, 0x05]))
   }
   
-  func test_inMemoryFile_sequence() {
+  func test_inMemoryFile_sequence() throws {
     let fhData = InMemoryFile([0x00, 0x01])
     XCTAssertEqual(fhData.next(), 0x00)
-    XCTAssertEqual(fhData.offsetInFile, 1)
+    XCTAssertEqual(try fhData.offset(), 1)
     XCTAssertEqual(fhData.next(), 0x01)
-    XCTAssertEqual(fhData.offsetInFile, 2)
+    XCTAssertEqual(try fhData.offset(), 2)
     XCTAssertEqual(fhData.next(), nil)
   }
   

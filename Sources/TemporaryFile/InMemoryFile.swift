@@ -7,6 +7,7 @@
 
 import Foundation
 import yExtensions
+import yProtocols
 
 @available(*, deprecated, renamed: "InMemoryFile")
 public typealias FileHandleCompatibleData = InMemoryFile
@@ -17,140 +18,87 @@ private func _unavailable(_ function:StaticString = #function) -> Never {
 
 /// A byte buffer in memory that is (limitedly) compatible with `FileHandle`.
 /// You can use this class instead of `TemporaryFile` for a specific purpose.
-open class InMemoryFile: FileHandle_ {
+open class InMemoryFile: FileHandleProtocol, Hashable {
   private var _data: Data
   private var _offset: Int = 0
   private var _isClosed: Bool = false
   
   private init(_data data: Data) {
     self._data = data
-    #if canImport(ObjectiveC)
-    super.init()
-    #else
-    super.init(fileDescriptor:-1, closeOnDealloc: false)
-    #endif
   }
   
-  #if canImport(ObjectiveC)
-  public convenience required override init() {
-    self.init(_data: Data())
-  }
-  #else
   public convenience required init() {
     self.init(_data: Data())
   }
-  #endif
   
   public convenience required init<S>(_ elements: S) where S: Sequence, S.Element == UInt8 {
     self.init(_data: Data(elements))
   }
   
-  required public init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
+  open func isEqual(to file: InMemoryFile) -> Bool {
+    return self._data == file._data
   }
   
-  open override func isEqual(_ object: Any?) -> Bool {
-    guard case let anotherData as InMemoryFile = object else { return false }
-    return self._data == anotherData._data
+  public static func ==(lhs: InMemoryFile, rhs: InMemoryFile) -> Bool {
+    return lhs.isEqual(to:rhs)
   }
   
-  open override var hash: Int {
-    return self._data.hashValue
+  open func hash(into hasher: inout Hasher) {
+    hasher.combine(self._data)
   }
   
-  open override var availableData: Data {
-    return self.readData(ofLength: self._data.count - self._offset)
+  open var availableData: Data {
+    let data = try! self.readToEnd()
+    return data == nil ? Data() : data!
   }
   
-  open override func close() throws {
+  open func close() throws {
     self._isClosed = true
   }
   
-  @available(*, deprecated, renamed: "close", message: "Use `func close() throws` instead.")
-  open override func closeFile() {
-    try! self.close()
+  public func offset() throws -> UInt64 {
+    return UInt64(self._offset)
   }
   
-  @available(*, unavailable, message: "You can't get the file descriptor of FileHandleCompatibleData.")
-  open override var fileDescriptor: Int32 {
-    return -1
-  }
-  
-  override open var offsetInFile: UInt64 {
-    get {
-      return UInt64(self._offset)
-    }
-    set {
-      self._offset = Int(newValue)
-    }
-  }
-  
-  open override var readabilityHandler: ((FileHandle) -> Void)? {
-    get {
-      _unavailable()
-    }
-    set {
-      _unavailable()
-    }
-  }
-  
-  open override func readData(ofLength length: Int) -> Data {
-    if self._isClosed { return .init() }
+  public func read(upToCount count: Int) throws -> Data? {
+    if self._isClosed { return nil }
     
-    var end = self._offset + length
-    if end > self._data.count { end = self._data.count }
+    let end: Int = self._data.count - self._offset < count ? self._data.count : self._offset + count
     defer { self._offset = end - self._data.startIndex}
     
     return self._data[Data.RelativeIndex(self._offset)..<Data.RelativeIndex(end)]
   }
   
-  open override func readDataToEndOfFile() -> Data {
-    return self.availableData
+  public func readToEnd() throws -> Data? {
+    return try self.read(upToCount: Int.max)
   }
   
-  @available(*, deprecated, renamed: "seek(toOffset:)", message: "Use `func seek(toOffset offset: UInt64) throws` instead.")
-  open override func seek(toFileOffset offset: UInt64) {
-    try! self.seek(toOffset: offset)
-  }
-  
-  public override func seek(toOffset offset: UInt64) throws {
+  public func seek(toOffset offset: UInt64) throws {
     guard offset >= 0 && offset <= self._data.count else { throw TemporaryFileError.outOfRange }
-    self.offsetInFile = offset
+    self._offset = Int(offset)
   }
   
-  open override func seekToEndOfFile() -> UInt64 {
+  @discardableResult
+  public func seekToEnd() throws -> UInt64 {
     let endOffset = UInt64(self._data.count)
-    try! self.seek(toOffset: endOffset)
+    try self.seek(toOffset: endOffset)
     return endOffset
   }
   
-  open override func synchronize() throws {
-    _unavailable()
+  public func synchronize() throws {
+    // do nothing
   }
   
-  open override func synchronizeFile() {
-    try! self.synchronize()
-  }
-  
-  open override func truncateFile(atOffset offset: UInt64) {
+  public func truncate(atOffset offset: UInt64) throws {
     if offset > UInt64(self._data.count) {
       self._data += Data(count: Int(offset) - self._data.count)
     } else {
       self._data = self._data[Data.RelativeIndex(0)..<Data.RelativeIndex(Int(offset))]
     }
-    self.offsetInFile = offset
+    self._offset = Int(offset)
   }
   
-  open override var writeabilityHandler: ((FileHandle) -> Void)? {
-    get {
-      _unavailable()
-    }
-    set {
-      _unavailable()
-    }
-  }
-  
-  open override func write(_ data: Data) {
+  public func write<T>(contentsOf data: T) throws where T : DataProtocol {
     for byte: UInt8 in data {
       if self._offset < self._data.count {
         self._data[Data.RelativeIndex(self._offset)] = byte
@@ -160,6 +108,7 @@ open class InMemoryFile: FileHandle_ {
       self._offset += 1
     }
   }
+  
 }
 
 extension InMemoryFile {
