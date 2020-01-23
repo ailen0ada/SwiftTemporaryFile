@@ -1,12 +1,14 @@
 /* *************************************************************************************************
  TemporaryDirectory+File.swift
-   © 2018-2019 YOCKOW.
+   © 2018-2020 YOCKOW.
      Licensed under MIT License.
      See "LICENSE.txt" for more information.
  ************************************************************************************************ */
  
 import Foundation
 import yExtensions
+import yProtocols
+
 private let manager = FileManager.default
 
 public typealias TemporaryFile = TemporaryDirectory.File
@@ -17,173 +19,78 @@ public typealias TemporaryFile = TemporaryDirectory.File
 public final class TemporaryDirectory {
   /// Represents a temporary file.
   /// The file is created always in some temporary directory represented by `TemporaryDirectory`.
-  public final class File: FileHandle_ {
+  public final class File: FileHandleProtocol, Hashable {
     public private(set) var isClosed: Bool = false
     private var _url: URL
-    private var _fileHandle: FileHandle
+    private var _fileHandle: AnyFileHandle
     private unowned var _temporaryDirectory: TemporaryDirectory
     
+    public static func ==(lhs: File, rhs: File) -> Bool {
+      return lhs._url == rhs._url
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self._url)
+    }
+    
     fileprivate init(_fileAt url: URL, temporaryDirectory: TemporaryDirectory) throws {
-      assert(url.isExistingLocalFileURL, "File doesn't exist at \(url.absoluteString)")
+      assert(url.isExistingLocalFile, "File doesn't exist at \(url.absoluteString)")
       let fh = try FileHandle(forUpdating: url)
       self._url = url
-      self._fileHandle = fh
+      self._fileHandle = AnyFileHandle(fh)
       self._temporaryDirectory = temporaryDirectory
-      #if canImport(ObjectiveC)
-      super.init()
-      #else
-      super.init(fileDescriptor: fh.fileDescriptor, closeOnDealloc: false)
-      #endif
-    }
-    
-    required init?(coder: NSCoder) {
-      fatalError("init(coder:) has not been implemented")
-    }
-    
-    public override func isEqual(_ object: Any?) -> Bool {
-      guard case let anotherTmpFile as File = object else { return false }
-      return self._fileHandle.isEqual(anotherTmpFile._fileHandle)
-    }
-    
-    public override var hash: Int {
-      return self._fileHandle.hash
     }
     
     /// Just close and remove
     fileprivate func _close() throws {
       if self.isClosed { throw TemporaryFileError.alreadyClosed }
-      
-      func __close(fh: FileHandle) throws {
-        #if swift(>=5.0)
-        if  #available(macOS 10.15, *) {
-          try fh.close()
-          return
-        }
-        #endif
-        fh.closeFile()
-      }
-      try __close(fh: self._fileHandle)
+      try self._fileHandle.close()
       self.isClosed = true
       try FileManager.default.removeItem(at: self._url)
     }
     
-    public override var availableData: Data {
-      return self._fileHandle.availableData
+    public var availableData: Data {
+      let data = try! self._fileHandle.readToEnd()
+      return data == nil ? Data() : data!
     }
     
-    public override func close() throws {
+    public func close() throws {
       try self._close()
       let removed = self._temporaryDirectory._temporaryFiles.remove(self)
       assert(removed == self)
     }
     
-    @available(*, deprecated, renamed: "close", message: "Use `func close() throws` instead.")
-    public override func closeFile() {
-      try? self.close()
+    public func offset() throws -> UInt64 {
+      return try self._fileHandle.offset()
     }
     
-    @available(*, unavailable, message: "You can't get the file descriptor of TemporaryFile.")
-    public override var fileDescriptor: Int32 {
-      return self._fileHandle.fileDescriptor
+    public func read(upToCount count: Int) throws -> Data? {
+      return try self._fileHandle.read(upToCount: count)
     }
     
-    public override var offsetInFile: UInt64 {
-      return self._fileHandle.offsetInFile
+    public func readToEnd() throws -> Data? {
+      return try self._fileHandle.readToEnd()
     }
     
-    private var _readabilityHandler: ((FileHandle) -> Void)? = nil
-    public override var readabilityHandler: ((FileHandle) -> Void)? {
-      get {
-        return self._readabilityHandler
-      }
-      set {
-        if let handler = newValue {
-          self._fileHandle.readabilityHandler = {[unowned self] _ in
-            handler(self)
-          }
-        } else {
-          self._fileHandle.readabilityHandler = nil
-          self._readabilityHandler = nil
-        }
-      }
+    public func seek(toOffset offset: UInt64) throws {
+      try self._fileHandle.seek(toOffset: offset)
     }
     
-    public override func readData(ofLength length: Int) -> Data {
-      return self._fileHandle.readData(ofLength:length)
+    @discardableResult
+    public func seekToEnd() throws -> UInt64 {
+      return try self._fileHandle.seekToEnd()
     }
     
-    public override func readDataToEndOfFile() -> Data {
-      return self._fileHandle.readDataToEndOfFile()
+    public func synchronize() throws {
+      try self._fileHandle.synchronize()
     }
     
-    @available(*, deprecated, renamed: "seek(toOffset:)", message: "Use `func seek(toOffset offset: UInt64) throws` instead.")
-    public override func seek(toFileOffset offset: UInt64) {
-      try! self.seek(toOffset: offset)
+    public func truncate(atOffset offset: UInt64) throws {
+      try self._fileHandle.truncate(atOffset: offset)
     }
     
-    public override func seek(toOffset offset: UInt64) throws {
-      #if swift(>=5.0)
-      if #available(macOS 10.15, *) {
-        try self._fileHandle.seek(toOffset: offset)
-        return
-      }
-      #endif
-      self._fileHandle.seek(toFileOffset: offset)
-    }
-    
-    public override func seekToEndOfFile() -> UInt64 {
-      return self._fileHandle.seekToEndOfFile()
-    }
-    
-    public override func synchronize() throws {
-      #if swift(>=5.0)
-      if #available(macOS 10.15, *) {
-        try self._fileHandle.synchronize()
-        return
-      }
-      #endif
-      self._fileHandle.synchronizeFile()
-    }
-    
-    @available(*, deprecated, message: "Use `func synchronize() throws` instead.")
-    public override func synchronizeFile() {
-      try? self.synchronize()
-    }
-    
-    public override func truncate(atOffset offset: UInt64) throws {
-      #if swift(>=5.0)
-      if #available(macOS 10.15, *) {
-        try self._fileHandle.truncate(atOffset: offset)
-        return
-      }
-      #endif
-      self._fileHandle.truncateFile(atOffset: offset)
-    }
-    
-    @available(*, deprecated, renamed: "truncate(atOffset:)", message: "Use `func truncate(atOffset offset: UInt64) throws` instead.")
-    public override func truncateFile(atOffset offset: UInt64) {
-      try? self.truncate(atOffset: offset)
-    }
-    
-    private var _writeabilityHandler: ((FileHandle) -> Void)? = nil
-    public override var writeabilityHandler: ((FileHandle) -> Void)? {
-      get {
-        return self._writeabilityHandler
-      }
-      set {
-        if let handler = newValue {
-          self._fileHandle.writeabilityHandler = {[unowned self] _ in
-            handler(self)
-          }
-        } else {
-          self._fileHandle.writeabilityHandler = nil
-          self._writeabilityHandler = nil
-        }
-      }
-    }
-    
-    public override func write(_ data: Data) {
-      self._fileHandle.write(data)
+    public func write<T>(contentsOf data: T) throws where T : DataProtocol {
+      try self._fileHandle.write(contentsOf: data)
     }
   }
   
@@ -193,7 +100,7 @@ public final class TemporaryDirectory {
   
   /// Use the directory at `url` temporarily.
   private init(_directoryAt url:URL) {
-    assert(url.isExistingLocalDirectoryURL, "Directory doesn't exist at \(url.absoluteString)")
+    assert(url.isExistingLocalDirectory, "Directory doesn't exist at \(url.absoluteString)")
     self._url = url
     self.isClosed = false
     self._temporaryFiles = []
@@ -210,7 +117,7 @@ public final class TemporaryDirectory {
     suffix: String = ".\(String(ProcessInfo.processInfo.processIdentifier, radix: 10))"
   ) throws {
     let parent = parentDirectory.resolvingSymlinksInPath()
-    guard parent.isExistingLocalDirectoryURL else { throw TemporaryFileError.invalidURL }
+    guard parent.isExistingLocalDirectory else { throw TemporaryFileError.invalidURL }
     let uuid = UUID().base32EncodedString()
     let tmpDirURL = parent.appendingPathComponent("\(prefix)\(uuid)\(suffix)", isDirectory: true)
     try manager.createDirectory(at: tmpDirURL,
