@@ -6,17 +6,17 @@ extension TemporaryFileTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__TemporaryFileTests = [
-        ("test_fileHandleCompatibleData", test_fileHandleCompatibleData),
-        ("test_fileHandleCompatibleData_collection", test_fileHandleCompatibleData_collection),
-        ("test_fileHandleCompatibleData_mutableCollection", test_fileHandleCompatibleData_mutableCollection),
-        ("test_fileHandleCompatibleData_mutableDataProtocol", test_fileHandleCompatibleData_mutableDataProtocol),
-        ("test_fileHandleCompatibleData_rangeReplaceableCollection", test_fileHandleCompatibleData_rangeReplaceableCollection),
-        ("test_fileHandleCompatibleData_sequence", test_fileHandleCompatibleData_sequence),
+        ("test_inMemoryFile_collection", test_inMemoryFile_collection),
+        ("test_inMemoryFile_mutableCollection", test_inMemoryFile_mutableCollection),
+        ("test_inMemoryFile_mutableDataProtocol", test_inMemoryFile_mutableDataProtocol),
+        ("test_inMemoryFile_rangeReplaceableCollection", test_inMemoryFile_rangeReplaceableCollection),
+        ("test_inMemoryFile_sequence", test_inMemoryFile_sequence),
+        ("test_inMemoryFile", test_inMemoryFile),
         ("test_temporaryDirectory", test_temporaryDirectory),
-        ("test_temporaryFile", test_temporaryFile),
         ("test_temporaryFile_closure", test_temporaryFile_closure),
         ("test_temporaryFile_copy", test_temporaryFile_copy),
         ("test_temporaryFile_truncate", test_temporaryFile_truncate),
+        ("test_temporaryFile", test_temporaryFile),
     ]
 }
 
