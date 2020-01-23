@@ -5,7 +5,7 @@ It was originally written as a part of [SwiftCGIResponder](https://github.com/YO
 
 # Requirements
 
-- Swift 4.1, 4.2, 5
+- Swift 5 (including compatibility mode for 4 or 4.2)
 - macOS or Linux
 
 
@@ -21,14 +21,26 @@ import Foundation
 import TemporaryFile
 
 let tmpFile = TemporaryFile()
-tmpFile.write("Hello, World!".data(using:.utf8)!)
-tmpFile.seek(toFileOffset:0)
-print(String(data:tmpFile.availableData, encoding:.utf8)!) // Prints "Hello, World!"
-tmpFile.copy(to:URL(fileURLWithPath:"/my/directory/hello.txt"))
+try! tmpFile.write(contentsOf: "Hello, World!".data(using:.utf8)!)
+try! tmpFile.seek(toOffset: 0)
+print(String(data: try! tmpFile.readToEnd()!, encoding: .utf8)!) // Prints "Hello, World!"
+try! tmpFile.copy(to: URL(fileURLWithPath: "/my/directory/hello.txt"))
+
+/*
+You can explicitly close the temporary file by calling `try tmpFile.close()`,
+though all of the temporary files are automatically closed at the end of program.
+*/
 ```
 
-You can explicitly close the temporary file by calling `tmpFile.closeFile()`,
-though all of the temporary files are automatically closed at the end of program.
+```Swift
+import TemporaryFile
+
+// You can pass a closure:
+TemporaryFile { (tmpFile: TemporaryFile) -> Void in
+  try! tmpFile.write(contentsOf: "Hello, World!".data(using:.utf8)!)
+  // ... 
+} // Automatically closed.
+```
 
 
 # License
