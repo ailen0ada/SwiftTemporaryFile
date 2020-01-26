@@ -19,7 +19,7 @@ public typealias TemporaryFile = TemporaryDirectory.File
 public final class TemporaryDirectory {
   /// Represents a temporary file.
   /// The file is created always in some temporary directory represented by `TemporaryDirectory`.
-  public final class File: FileHandleProtocol, Hashable {
+  public final class File: TemporaryFileProtocol {
     public private(set) var isClosed: Bool = false
     private var _url: URL
     private var _fileHandle: AnyFileHandle

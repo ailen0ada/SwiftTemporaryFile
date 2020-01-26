@@ -18,7 +18,7 @@ private func _unavailable(_ function:StaticString = #function) -> Never {
 
 /// A byte buffer in memory that is (limitedly) compatible with `FileHandle`.
 /// You can use this class instead of `TemporaryFile` for a specific purpose.
-open class InMemoryFile: FileHandleProtocol, Hashable {
+open class InMemoryFile: TemporaryFileProtocol {
   private var _data: Data
   private var _offset: Int = 0
   private var _isClosed: Bool = false
@@ -109,6 +109,9 @@ open class InMemoryFile: FileHandleProtocol, Hashable {
     }
   }
   
+  public func write<D>(_ data: D) where D: DataProtocol {
+    try! self.write(contentsOf: data)
+  }
 }
 
 extension InMemoryFile {
