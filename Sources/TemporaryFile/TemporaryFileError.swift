@@ -10,4 +10,5 @@ public enum TemporaryFileError: Swift.Error {
   case fileCreationFailed
   case invalidURL
   case outOfRange
+  case stringConversionFailed
 }
