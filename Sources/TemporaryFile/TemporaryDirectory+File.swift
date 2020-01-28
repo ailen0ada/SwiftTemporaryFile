@@ -22,7 +22,12 @@ public final class TemporaryDirectory {
   public final class File: TemporaryFileProtocol {
     public private(set) var isClosed: Bool = false
     private var _url: URL
-    private var _fileHandle: AnyFileHandle
+    internal private(set) var __fileHandle: FileHandle {
+      didSet {
+        self._fileHandle = AnyFileHandle(self.__fileHandle)
+      }
+    }
+    private var _fileHandle: AnyFileHandle!
     private unowned var _temporaryDirectory: TemporaryDirectory
     
     public static func ==(lhs: File, rhs: File) -> Bool {
@@ -37,6 +42,7 @@ public final class TemporaryDirectory {
       assert(url.isExistingLocalFile, "File doesn't exist at \(url.absoluteString)")
       let fh = try FileHandle(forUpdating: url)
       self._url = url
+      self.__fileHandle = fh
       self._fileHandle = AnyFileHandle(fh)
       self._temporaryDirectory = temporaryDirectory
     }
@@ -250,5 +256,4 @@ extension TemporaryDirectory.File {
     try FileManager.default.copyItem(at: self._url, to: destination)
   }
 }
-
 

@@ -12,6 +12,7 @@ extension TemporaryFileTests {
         ("test_inMemoryFile_rangeReplaceableCollection", test_inMemoryFile_rangeReplaceableCollection),
         ("test_inMemoryFile_sequence", test_inMemoryFile_sequence),
         ("test_inMemoryFile", test_inMemoryFile),
+        ("test_process", test_process),
         ("test_temporaryDirectory", test_temporaryDirectory),
         ("test_temporaryFile_closure", test_temporaryFile_closure),
         ("test_temporaryFile_copy", test_temporaryFile_copy),
