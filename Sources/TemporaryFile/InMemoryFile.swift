@@ -12,10 +12,6 @@ import yProtocols
 @available(*, deprecated, renamed: "InMemoryFile")
 public typealias FileHandleCompatibleData = InMemoryFile
 
-private func _unavailable(_ function:StaticString = #function) -> Never {
-  fatalError("\(function) is unavailable in InMemoryFile.")
-}
-
 /// A byte buffer in memory that is (limitedly) compatible with `FileHandle`.
 /// You can use this class instead of `TemporaryFile` for a specific purpose.
 open class InMemoryFile: TemporaryFileProtocol {
