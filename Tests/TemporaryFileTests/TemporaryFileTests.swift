@@ -135,5 +135,29 @@ final class TemporaryFileTests: XCTestCase {
     fhData.resetBytes(in: 1...2)
     XCTAssertEqual(fhData.availableData, Data([0xFF, 0x00, 0x00, 0xFF]))
   }
+  
+  func test_process() throws {
+    let process = Process()
+    if #available(macOS 10.13, *) {
+      process.executableURL = URL(fileURLWithPath: "/bin/sh")
+    } else {
+      process.launchPath = "/bin/sh"
+    }
+    process.arguments = ["-c", "echo TEST"]
+    
+    let stdout = try TemporaryFile()
+    process[.standardOutput] = stdout
+    
+    if #available(macOS 10.13, *) {
+      try process.run()
+    } else {
+      process.launch()
+    }
+    process.waitUntilExit()
+    
+    try stdout.seek(toOffset: 0)
+    XCTAssertEqual(try stdout.readToEnd().flatMap({ String(data: $0, encoding: .utf8) }),
+                   "TEST\n")
+  }
 }
 
