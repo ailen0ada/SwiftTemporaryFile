@@ -10,7 +10,6 @@ import yProtocols
 
 /// A type that represents some temporary file.
 public protocol TemporaryFileProtocol: FileHandleProtocol,
-                                       DataOutputStream,
                                        TextOutputStream,
                                        Hashable {
   /// Write the data containing a representation of the String encoded using a given encoding.
@@ -24,12 +23,6 @@ extension TemporaryFileProtocol {
       throw TemporaryFileError.stringConversionFailed
     }
     try self.write(contentsOf: data)
-  }
-  
-  /// Write `data` to the instance using `mutating func write(contentsOf:) throws` of `FileHandleProtocol`.
-  /// Runtime error occurs when that method throws an error.
-  public mutating func write<D>(_ data: D) where D: DataProtocol {
-    try! self.write(contentsOf: data)
   }
   
   /// Write `string` to the instance using `mutating func write(string:) throws` of `TemporaryFileProtocol`.

@@ -104,10 +104,6 @@ open class InMemoryFile: TemporaryFileProtocol {
       self._offset += 1
     }
   }
-  
-  public func write<D>(_ data: D) where D: DataProtocol {
-    try! self.write(contentsOf: data)
-  }
 }
 
 extension InMemoryFile {
