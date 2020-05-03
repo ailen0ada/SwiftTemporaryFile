@@ -145,8 +145,8 @@ public final class TemporaryDirectory {
     self._temporaryFiles.insert(tmpFile)
     return tmpFile
   }
+  
   /// Remove all temporary files in the temporary directory represented by the receiver.
-  /// - returns: `true` if all files are removed successfully, otherwise `false`.
   public func closeAllTemporaryFiles() throws {
     while self._temporaryFiles.count > 0 {
       let file = self._temporaryFiles.first!
