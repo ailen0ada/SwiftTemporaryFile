@@ -5,14 +5,14 @@ It was originally written as a part of [SwiftCGIResponder](https://github.com/YO
 
 # Requirements
 
-- Swift 5 (including compatibility mode for 4 or 4.2)
-- macOS or Linux
+- Swift 5
+- macOS(>=10.15) or Linux
 
 
 ## Dependencies
 
-* [SwiftUnicodeSupplement](https://github.com/YOCKOW/SwiftUnicodeSupplement)
-* [ySwiftExtensions](https://github.com/YOCKOW/ySwiftExtensions)
+![Dependencies](./dependencies.svg)
+
 
 # Usage
 

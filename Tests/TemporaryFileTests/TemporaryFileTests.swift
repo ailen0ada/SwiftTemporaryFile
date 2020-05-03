@@ -9,7 +9,6 @@ import XCTest
 @testable import TemporaryFile
 import yExtensions
 import yProtocols
-import yNewAPI
 
 import Foundation
 
@@ -139,13 +138,13 @@ final class TemporaryFileTests: XCTestCase {
   
   func test_process() throws {
     let process = Process()
-    process.newAPI.executableURL = URL(fileURLWithPath: "/bin/sh")
+    process.executableURL = URL(fileURLWithPath: "/bin/sh")
     process.arguments = ["-c", "echo TEST"]
     
     let stdout = try TemporaryFile()
     process[.standardOutput] = stdout
     
-    try process.newAPI.run()
+    try process.run()
     process.waitUntilExit()
     
     try stdout.seek(toOffset: 0)

@@ -14,7 +14,7 @@ public typealias FileHandleCompatibleData = InMemoryFile
 
 /// A byte buffer in memory that is (limitedly) compatible with `FileHandle`.
 /// You can use this class instead of `TemporaryFile` for a specific purpose.
-open class InMemoryFile: TemporaryFileProtocol {
+open class InMemoryFile: FileHandleProtocol {
   private var _data: Data
   private var _offset: Int = 0
   private var _isClosed: Bool = false
@@ -41,11 +41,6 @@ open class InMemoryFile: TemporaryFileProtocol {
   
   open func hash(into hasher: inout Hasher) {
     hasher.combine(self._data)
-  }
-  
-  open var availableData: Data {
-    let data = try! self.readToEnd()
-    return data == nil ? Data() : data!
   }
   
   open func close() throws {
@@ -103,6 +98,10 @@ open class InMemoryFile: TemporaryFileProtocol {
       }
       self._offset += 1
     }
+  }
+  
+  public func write<Target>(to target: inout Target) throws where Target: DataOutputStream {
+    try target.write(contentsOf: self._data)
   }
 }
 

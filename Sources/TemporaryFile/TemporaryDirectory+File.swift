@@ -19,15 +19,10 @@ public typealias TemporaryFile = TemporaryDirectory.File
 public final class TemporaryDirectory {
   /// Represents a temporary file.
   /// The file is created always in some temporary directory represented by `TemporaryDirectory`.
-  public final class File: TemporaryFileProtocol {
+  public final class File: FileHandleProtocol, Hashable {
     public private(set) var isClosed: Bool = false
     private var _url: URL
-    internal private(set) var __fileHandle: FileHandle {
-      didSet {
-        self._fileHandle = AnyFileHandle(self.__fileHandle)
-      }
-    }
-    private var _fileHandle: AnyFileHandle!
+    internal private(set) var _fileHandle: FileHandle
     private unowned var _temporaryDirectory: TemporaryDirectory
     
     public static func ==(lhs: File, rhs: File) -> Bool {
@@ -42,8 +37,7 @@ public final class TemporaryDirectory {
       assert(url.isExistingLocalFile, "File doesn't exist at \(url.absoluteString)")
       let fh = try FileHandle(forUpdating: url)
       self._url = url
-      self.__fileHandle = fh
-      self._fileHandle = AnyFileHandle(fh)
+      self._fileHandle = fh
       self._temporaryDirectory = temporaryDirectory
     }
     
@@ -53,11 +47,6 @@ public final class TemporaryDirectory {
       try self._fileHandle.close()
       self.isClosed = true
       try FileManager.default.removeItem(at: self._url)
-    }
-    
-    public var availableData: Data {
-      let data = try! self._fileHandle.readToEnd()
-      return data == nil ? Data() : data!
     }
     
     public func close() throws {
@@ -72,10 +61,6 @@ public final class TemporaryDirectory {
     
     public func read(upToCount count: Int) throws -> Data? {
       return try self._fileHandle.read(upToCount: count)
-    }
-    
-    public func readToEnd() throws -> Data? {
-      return try self._fileHandle.readToEnd()
     }
     
     public func seek(toOffset offset: UInt64) throws {
@@ -160,8 +145,8 @@ public final class TemporaryDirectory {
     self._temporaryFiles.insert(tmpFile)
     return tmpFile
   }
+  
   /// Remove all temporary files in the temporary directory represented by the receiver.
-  /// - returns: `true` if all files are removed successfully, otherwise `false`.
   public func closeAllTemporaryFiles() throws {
     while self._temporaryFiles.count > 0 {
       let file = self._temporaryFiles.first!
