@@ -57,7 +57,7 @@ open class InMemoryFile: FileHandleProtocol {
     let end: Int = self._data.count - self._offset < count ? self._data.count : self._offset + count
     defer { self._offset = end - self._data.startIndex}
     
-    return self._data[Data.RelativeIndex(self._offset)..<Data.RelativeIndex(end)]
+    return self._data[relativeBounds: self._offset..<end]
   }
   
   public func readToEnd() throws -> Data? {
@@ -84,7 +84,7 @@ open class InMemoryFile: FileHandleProtocol {
     if offset > UInt64(self._data.count) {
       self._data += Data(count: Int(offset) - self._data.count)
     } else {
-      self._data = self._data[Data.RelativeIndex(0)..<Data.RelativeIndex(Int(offset))]
+      self._data = self._data[relativeBounds: 0..<Int(offset)]
     }
     self._offset = Int(offset)
   }
@@ -92,7 +92,7 @@ open class InMemoryFile: FileHandleProtocol {
   public func write<T>(contentsOf data: T) throws where T : DataProtocol {
     for byte: UInt8 in data {
       if self._offset < self._data.count {
-        self._data[Data.RelativeIndex(self._offset)] = byte
+        self._data[relativeIndex: self._offset] = byte
       } else {
         self._data.append(byte)
       }
@@ -137,7 +137,7 @@ extension InMemoryFile: Sequence, IteratorProtocol {
   public func next() -> Data.Element? {
     guard self._offset < self._data.count else { return nil }
     defer { self._offset += 1 }
-    return self._data[Data.RelativeIndex(self._offset)]
+    return self._data[relativeIndex: self._offset]
   }
 }
 
@@ -146,10 +146,10 @@ extension InMemoryFile: Collection {
   
   public subscript(position: Int) -> Data.Element {
     get {
-      return self._data[Data.RelativeIndex(position)]
+      return self._data[relativeIndex: position]
     }
     set {
-      self._data[Data.RelativeIndex(position)] = newValue
+      self._data[relativeIndex: position] = newValue
     }
   }
   
