@@ -22,14 +22,14 @@ a.external_repository_anchor {
 </g>
 
 <g id="node4" class="node">
-<title>ySwiftExtensions</title>
-<ellipse fill="none" stroke="black" cx="92.14" cy="-199.28" rx="81.32" ry="25.41" />
-<text text-anchor="middle" x="92.14" y="-202.08" font-family="monospace" font-size="12px"><a href="https://github.com/YOCKOW/ySwiftExtensions.git" xlink:href="https://github.com/YOCKOW/ySwiftExtensions.git" class="external_repository_anchor">ySwiftExtensions</a></text>
-<text text-anchor="middle" x="92.14" y="-188.08" font-family="monospace" font-size="12px">@1.1.0</text>
+<title>yExtensions</title>
+<ellipse fill="none" stroke="black" cx="92.14" cy="-199.28" rx="59.92" ry="25.41" />
+<text text-anchor="middle" x="92.14" y="-202.08" font-family="monospace" font-size="12px"><a href="https://github.com/YOCKOW/ySwiftExtensions.git" xlink:href="https://github.com/YOCKOW/ySwiftExtensions.git" class="external_repository_anchor">yExtensions</a></text>
+<text text-anchor="middle" x="92.14" y="-188.08" font-family="monospace" font-size="12px">@1.2.0</text>
 </g>
 
 <g id="edge1" class="edge">
-<title>TemporaryFile-&gt;ySwiftExtensions</title>
+<title>TemporaryFile-&gt;yExtensions</title>
 <path fill="none" stroke="black" d="M92.14,-260.55C92.14,-252.99 92.14,-243.82 92.14,-234.94" />
 <polygon fill="black" stroke="black" points="95.64,-234.77 92.14,-224.77 88.64,-234.77 95.64,-234.77" />
 </g>
@@ -48,7 +48,7 @@ a.external_repository_anchor {
 </g>
 
 <g id="edge3" class="edge">
-<title>ySwiftExtensions-&gt;UnicodeSupplement</title>
+<title>yExtensions-&gt;UnicodeSupplement</title>
 <path fill="none" stroke="black" d="M92.14,-173.72C92.14,-165.71 92.14,-156.66 92.14,-148.05" />
 <polygon fill="black" stroke="black" points="95.64,-147.87 92.14,-137.87 88.64,-147.87 95.64,-147.87" />
 </g>
