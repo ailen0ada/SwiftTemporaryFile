@@ -28,7 +28,11 @@ open class InMemoryFile: FileHandleProtocol {
   }
   
   public convenience required init<S>(_ elements: S) where S: Sequence, S.Element == UInt8 {
-    self.init(_data: Data(elements))
+    if case let data as Data = elements {
+      self.init(_data: data)
+    } else {
+      self.init(_data: Data(elements))
+    }
   }
   
   open func isEqual(to file: InMemoryFile) -> Bool {
