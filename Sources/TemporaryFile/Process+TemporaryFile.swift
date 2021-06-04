@@ -78,7 +78,7 @@ extension Process {
       case let fileHandle as FileHandle:
         self[keyPath: propertyPath] = fileHandle
       case let temporaryFile as TemporaryFile:
-        let fh = temporaryFile._fileHandle
+        let fh = try! temporaryFile._temporaryDirectory._fileHandle(for: temporaryFile)
         self[keyPath: propertyPath] = fh
         _temporaryFileTable[fh] = temporaryFile
       default:
