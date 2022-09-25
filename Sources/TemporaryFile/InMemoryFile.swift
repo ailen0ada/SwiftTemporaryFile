@@ -108,9 +108,7 @@ open class InMemoryFile: FileHandleProtocol {
   public func write<Target>(to target: inout Target) throws where Target: DataOutputStream {
     try target.write(contentsOf: self._data)
   }
-}
-
-extension InMemoryFile {
+  
   /// Creates an empty buffer of a specified size.
   public convenience init(capacity: Int) {
     self.init(_data: Data(capacity: capacity))
@@ -182,6 +180,13 @@ extension InMemoryFile: MutableCollection, RangeReplaceableCollection {
   
   public func reserveCapacity(_ nn: Int) {
     self._data.reserveCapacity(nn)
+  }
+
+  public func replaceSubrange<C>(
+    _ subrange: Range<Int>,
+    with newElements: C
+  ) where C: Collection, Data.Element == C.Element {
+    self._data.replaceSubrange(subrange, with: newElements)
   }
 }
 
