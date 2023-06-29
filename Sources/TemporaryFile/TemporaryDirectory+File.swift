@@ -288,5 +288,9 @@ extension TemporaryDirectory.File {
     let url = try _temporaryDirectory._substance(for: self).url
     try manager.copyItem(at: url, to: destination)
   }
+
+  public func url() throws -> URL {
+    return try _temporaryDirectory._substance(for: self).url
+  }
 }
 
